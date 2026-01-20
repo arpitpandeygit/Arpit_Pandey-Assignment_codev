@@ -1,0 +1,8 @@
+variable "service_name" {
+  type = string
+}
+
+module "service" {
+  source       = "../../modules/service"
+  service_name = var.service_name
+}

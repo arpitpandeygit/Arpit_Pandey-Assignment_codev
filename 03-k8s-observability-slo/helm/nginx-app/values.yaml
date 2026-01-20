@@ -1,0 +1,51 @@
+# nginx-app values
+# This chart intentionally exposes only production-relevant knobs
+
+replicaCount: 2
+
+image:
+  repository: nginx
+  tag: "1.25"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 2
+  failureThreshold: 3
+
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 2
+  failureThreshold: 3
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  cpuUtilization: 70
+  memoryUtilization: 75
+
+pdb:
+  minAvailable: 1
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

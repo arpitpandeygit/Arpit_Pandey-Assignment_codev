@@ -1,0 +1,57 @@
+# -------------------------
+# OS / Editor noise
+# -------------------------
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# -------------------------
+# Kubernetes / Helm temp
+# -------------------------
+*.tgz
+charts/*.tgz
+helm/**/charts/*
+!helm/**/charts/.gitkeep
+
+# -------------------------
+# Logs & runtime artifacts
+# -------------------------
+*.log
+nohup.out
+
+# -------------------------
+# Local cluster / tooling
+# -------------------------
+.kube/
+.minikube/
+.kind/
+.cache/
+.tmp/
+
+# -------------------------
+# Observability runtime data
+# -------------------------
+observability/**/data/
+observability/**/cache/
+
+# -------------------------
+# Generated / exported files
+# -------------------------
+*-rendered.yaml
+*-output.yaml
+
+# -------------------------
+# Screenshots policy
+# -------------------------
+# Keep screenshots tracked intentionally
+# (DO NOT ignore screenshots/)
+# -------------------------
+
+# -------------------------
+# SLO working artifacts
+# -------------------------
+slo/drafts/
+slo/tmp/
+
