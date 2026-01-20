@@ -19,7 +19,7 @@ The system enables application teams to:
 - Observe service health via a centralized platform view
     
 
-The focus of this implementation is **platform correctness, reliability, and operability**, not feature volume or UI complexity.
+The focus of this implementation is **platform correctness, reliability, and operability**.
 
 The design intentionally mirrors how **SRE, Platform Engineering, and DevOps teams** structure internal systems in large organizations.
 
@@ -57,7 +57,7 @@ No infrastructure is applied automatically; instead, **artifacts are generated d
 
 ## 3. High-Level Architecture
 
-`Client (Developer / Tooling)         |         v Deployment Portal API (FastAPI)         |         +-- Service Registration (Control Plane)         |     ├── Terraform env generation         |     ├── Kubernetes manifest generation         |     └── CI pipeline generation         |         +-- Deployment Trigger (CI Intent)         |         +-- Health Aggregation (Operational View)         | State Store (JSON-based, simulated)`
+<img width="880" height="553" alt="Asdakkk" src="https://github.com/user-attachments/assets/23a2482d-c622-434f-8d43-c9ef9796e533" />
 
 **Key design principle**:
 
@@ -69,21 +69,33 @@ No infrastructure is applied automatically; instead, **artifacts are generated d
 
 ### API
 
-`POST /platform/services`
+```
+POST /platform/services
+```
 
 ### Input
 
-`{   "service_name": "payments",   "team_name": "core-platform",   "repo_url": "https://github.com/org/payments" }`
+```
+{
+  "service_name": "payments",
+  "team_name": "core-platform",
+  "repo_url": "https://github.com/org/payments"
+}
+```
 
 ### What happens during registration
 
-Service registration is treated as an **onboarding workflow**, not a simple CRUD operation.
+Service registration is treated as an **onboarding workflow**.
 
 The platform automatically generates:
 
 #### 1. Terraform Infrastructure Contracts
 
-`terraform/envs/dev/payments/ ├── main.tf └── outputs.tf`
+```
+terraform/envs/dev/payments/
+├── main.tf
+└── outputs.tf
+```
 
 These files wire reusable Terraform modules:
 
@@ -101,7 +113,9 @@ This mirrors real-world platform behavior where:
 
 #### 2. Kubernetes Deployment Manifest (Template-Based)
 
-`app/templates/kubernetes/generated/payments-deployment.yaml`
+```
+app/templates/kubernetes/generated/payments-deployment.yaml
+```
 
 The manifest includes:
 
@@ -116,7 +130,9 @@ The platform enforces runtime consistency without applying manifests directly.
 
 #### 3. CI/CD Pipeline (Jenkinsfile)
 
-`app/templates/jenkins/generated/payments.Jenkinsfile`
+```
+app/templates/jenkins/generated/payments.Jenkinsfile
+```
 
 The pipeline defines:
 
@@ -133,7 +149,9 @@ The pipeline is intentionally generic and templated to remain reusable across se
 
 #### 4. Metadata Persistence
 
-`app/state/services.json`
+```
+app/state/services.json
+```
 
 This acts as the platform’s source of truth for:
 
@@ -146,20 +164,33 @@ This acts as the platform’s source of truth for:
 
 ### Response
 
-`{   "service_name": "payments",   "status": "REGISTERED",   "artifacts": {     "terraform": "terraform/envs/dev/payments",     "k8s_manifest": "app/templates/kubernetes/generated",     "jenkins_pipeline": "app/templates/jenkins/generated"   } }`
-
+```
+{
+  "service_name": "payments",
+  "status": "REGISTERED",
+  "artifacts": {
+    "terraform": "terraform/envs/dev/payments",
+    "k8s_manifest": "app/templates/kubernetes/generated",
+    "jenkins_pipeline": "app/templates/jenkins/generated"
+  }
+}
+```
 ---
 
 ## 5. Feature 2 — Trigger a Deployment Job (Simulation)
 
 ### API
 
-`POST /platform/deployments`
-
+```
+POST /platform/deployments
+```
 ### Input
 
-`{   "service_name": "payments" }`
-
+```
+{
+  "service_name": "payments"
+}
+```
 ### Behavior
 
 This endpoint **does not invoke Jenkins directly**.
@@ -192,20 +223,27 @@ In production environments:
 - Tight coupling creates failure amplification
     
 
-This design reflects real-world **control-plane vs execution-plane separation**.
-
 ---
 
 ## 6. Feature 3 — Health Dashboard
 
 ### API
 
-`GET /platform/services/{service_name}/health`
-
+```
+GET /platform/services/{service_name}/health
+```
 ### Response
 
-`{   "service_name": "payments",   "last_deployment_time": "...",   "deployment_status": "QUEUED",   "pod_count": 3,   "cpu_usage": "120m",   "memory_usage": "256Mi" }`
-
+```
+{
+  "service_name": "payments",
+  "last_deployment_time": "...",
+  "deployment_status": "QUEUED",
+  "pod_count": 3,
+  "cpu_usage": "120m",
+  "memory_usage": "256Mi"
+}
+```
 ### Notes
 
 - Deployment data is derived from platform state
@@ -256,8 +294,15 @@ This ensures:
 
 ### Structure
 
-`terraform/ ├── modules/ │   ├── ecr/ │   ├── iam/ │   └── service/ └── envs/     └── dev/`
-
+```
+terraform/
+├── modules/
+│   ├── ecr/
+│   ├── iam/
+│   └── service/
+└── envs/
+    └── dev/
+```
 ### Design Decisions
 
 - Modules are reusable and platform-owned
@@ -265,8 +310,6 @@ This ensures:
 - Each service gets its own environment instantiation
     
 - IAM intent follows least-privilege principles
-    
-- No `terraform apply` is executed by the platform
     
 
 This mirrors how infra is typically gated by:
@@ -290,9 +333,6 @@ This mirrors how infra is typically gated by:
     
 - CI/CD and infra concerns are decoupled
     
-
-The platform focuses on **safe defaults**, not full security enforcement.
-
 ---
 
 ## 10. Operational Considerations
@@ -360,17 +400,18 @@ The current design allows these evolutions without architectural changes.
 
 ## 13. Closing Notes
 
-This project is deliberately small in surface area but deep in intent.
+This repository demonstrates a practical approach to building an internal  
+deployment platform with a strong emphasis on:
 
-The emphasis throughout is on:
-
-- Deterministic automation
+- Clear separation of responsibilities
     
-- Clear ownership boundaries
+- Infrastructure and delivery standardization
     
-- Failure-aware design
+- Reusable automation primitives
     
-- Operability over cleverness
+- Operational visibility for platform and SRE teams
     
 
-The goal is not feature completeness, but **confidence under change and failure**.
+The implementation prioritizes correctness, clarity, and maintainability over  
+excessive abstraction. All components are designed to be easily extended or  
+integrated into a larger CI/CD and infrastructure ecosystem.
